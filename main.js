@@ -95,11 +95,11 @@ const bgFiles = [
     let realUrl = "./test.html";
   
     let positions = [
-      {left: 16, top: 24},
+      {left: 336, top: 14},
       {left: 120, top: 80},
-      {left: 40, top: 180},
+      {left: 240, top: 580},
       {left: 220, top: 120},
-      {left: 70, top: 250}
+      {left: 370, top: 250}
     ];
     let currentPos = 0;
   
