@@ -1,22 +1,3 @@
-const iframes = document.querySelectorAll('.myIframe');
-let fadeTimeout;
-
-function makeFade() {
-  iframes.forEach(iframe => iframe.classList.add('fade'));
-}
-
-function resetFadeTimer() {
-  iframes.forEach(iframe => iframe.classList.remove('fade'));
-  clearTimeout(fadeTimeout);
-  fadeTimeout = setTimeout(makeFade, 10000);
-}
-
-['mousemove', 'keydown', 'mousedown', 'touchstart'].forEach(evt => {
-  document.addEventListener(evt, resetFadeTimer);
-});
-
-resetFadeTimer();
-
 // --- Dynamic iframe popup preview ---
 document.addEventListener('DOMContentLoaded', function() {
   // Modal structure
@@ -88,47 +69,11 @@ const bgFiles = [
 
   document.addEventListener('DOMContentLoaded', function() {
     const marqueeBox = document.getElementById('marquee-box');
-    const afterClick = document.getElementById('after-click');
-    const realLinkBtn = document.getElementById('real-link-btn');
-  
-    // กำหนดลิงก์จริงที่ต้องการ (เปลี่ยนตรงนี้ได้)
-    let realUrl = "./test.html";
-  
-    let positions = [
-      {left: 336, top: 14},
-      {left: 120, top: 80},
-      {left: 240, top: 580},
-      {left: 220, top: 120},
-      {left: 370, top: 250}
-    ];
-    let currentPos = 0;
-  
-    marqueeBox.addEventListener('click', function() {
-      currentPos = (currentPos + 1) % positions.length;
-      marqueeBox.style.display = 'none';
-      afterClick.style.display = 'flex';
-      afterClick.style.left = positions[currentPos].left + 'px';
-      afterClick.style.top = positions[currentPos].top + 'px';
-    });
-  
-    // เมื่อกดไอคอน ให้ไปยังลิงก์จริง
-    realLinkBtn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      window.open(realUrl, '_blank');
-      marqueeBox.style.display = 'block';
-      afterClick.style.display = 'none';
-      // reset ตำแหน่ง
-      marqueeBox.style.left = '';
-      marqueeBox.style.top = '';
-      currentPos = 0;
-    });
-  
-    // กดที่ afterClick (นอกจากปุ่ม) จะกลับไป marquee เดิม
-    afterClick.addEventListener('click', function(e) {
-      if (e.target === realLinkBtn) return;
-      marqueeBox.style.display = 'block';
-      afterClick.style.display = 'none';
-    });
+    if (marqueeBox) {
+      marqueeBox.addEventListener('click', function() {
+        window.open('./test.html', '_blank');
+      });
+    }
   });
   document.addEventListener('DOMContentLoaded', function() {
     // เลือกทุก .preview-box.animated
