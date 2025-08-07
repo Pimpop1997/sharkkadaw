@@ -32,14 +32,7 @@
     const { time } = JSON.parse(data);
     if (Date.now() - time < BLOCK_MINUTES * 60 * 1000) blockClaim();
   }
-  
-  // เปิด overlay 3 วินาทีแรก หลังจากนั้นค่อยให้กด
-  const overlay = document.getElementById('glass-overlay');
-  overlay.style.pointerEvents = 'none';
-  setTimeout(() => {
-    overlay.style.pointerEvents = 'auto';
-  }, 3000);
-  
+
   // จับคลิกเฉพาะแถบปุ่ม (btn-zone)
   document.getElementById('btn-zone').addEventListener('click', function(e) {
     localStorage.setItem(CLAIM_KEY, JSON.stringify({ time: Date.now() }));
