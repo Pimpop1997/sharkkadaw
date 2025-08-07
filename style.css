@@ -14,9 +14,13 @@ h1 {
 }
 .grid-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 50px;
-    margin-top: 80px;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 18px;
+    margin-top: 32px;
+    padding: 0 6px;
+    border:5px solid #ff0000; /* ขอบแดง */
+    border-radius: 18px;
+    box-shadow:0 0 18px 2px #eeff00;  
 }
   
   
@@ -37,10 +41,47 @@ iframe {
     font-size: 14px;
     color: #bbb;
 }
-.grid-container > div {
+.grid-container > div, .preview-box {
     display: flex;
     flex-direction: column;
     align-items: center;
+    background: rgba(255,255,255,0.05);
+    border:2px solid #09ff00; /* ขอบแดง */
+    border-radius: 18px;
+    box-shadow: 0 2px 12px rgba(1, 29, 105, 0.2);
+    padding: 8px 3px 8px 3px; 
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+.preview-box:hover {
+    box-shadow: 0 4px 24px #0078ff55, 0 1.5px 12px #0004;
+    transform: scale(1.025);
+}
+.preview-img {
+    width: 100%;
+    max-width: 195px;
+    height: 195px;
+    aspect-ratio: 1/1;
+    object-fit: cover;
+    border-radius: 13px;
+    border: 2px solid rgb(38, 0, 255);
+    margin-bottom: 3px;
+    background: #222;
+    box-shadow: 0 2px 10px #0002;
+}
+@media (max-width: 600px) {
+    .grid-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 11px;
+        margin-top: 18px;
+    }
+    .preview-img {
+        max-width: 95vw;
+        min-width: 195px;
+        aspect-ratio: 1/1;
+    }
+    .preview-box {
+        padding: 6px 2px 6px 2px;
+    }
 }
 
 .iframe-label a {
@@ -103,4 +144,81 @@ iframe {
       0 2px 16px #003d60,
       0 0 4px #fff;
   }
+}
+#marquee-zone {
+  position: relative;
+  width: 330px; /* ปรับตามขนาดที่ต้องการ */
+  height: 40px;
+  overflow: visible;
+  margin: 24px 0 0 16px;
+}
+#marquee-box {
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  cursor: pointer;
+  background: rgba(0,0,0,0.7);
+  border-radius: 12px;
+  padding: 7px 10px;
+  border: 2px solid #fff3;
+  position: absolute;
+  left: 0; top: 0;
+  z-index: 2;
+}
+#marquee-content {
+  display: inline-block;
+  animation: marquee-move 4s linear infinite;
+  font-size: 1.25rem;
+  color: #fff;
+  font-weight: bold;
+}
+@keyframes marquee-move {
+  0% { transform: translateX(100%);}
+  100% { transform: translateX(-100%);}
+}
+#after-click {
+  position: absolute;
+  left: 0; top: 0;
+  background: #fffbe6;
+  border-radius: 10px;
+  padding: 6px 12px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 10px #0003;
+  font-size: 1.05rem;
+}
+#after-click input {
+  border: 1.5px solid #aaa;
+  border-radius: 7px;
+  padding: 3px 8px;
+  font-size: 1rem;
+}
+.icon-cart-btn {
+  background: #fffbe6;
+  border: 2px solid #ffb700;
+  border-radius: 50%;
+  font-size: 1.7rem;
+  width: 2.5em;           /* ความกว้างปุ่ม (เพิ่มเอง) */
+  height: 2.5em;          /* ความสูงปุ่ม (เพิ่มเอง) */
+  cursor: pointer;
+  margin-left: 7px;
+  box-shadow: 0 2px 8px #0002;
+  transition: background 0.15s, transform 0.15s;
+}
+.icon-cart-btn:hover {
+  background: #ffe066;
+  transform: scale(1.10);
+}
+/* เพิ่มใน style.css */
+@keyframes gridGlow {
+  0% { box-shadow: 0 0 0 0 #ff980033; }
+  50% { box-shadow: 0 0 16px 8px #ff980055; }
+  100% { box-shadow: 0 0 0 0 #ff980033; }
+}
+
+.preview-box.animated {
+  animation: gridGlow 1.2s infinite;
+  /* animation-delay จะถูก set จาก JS */
 }

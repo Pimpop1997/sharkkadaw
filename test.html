@@ -1,0 +1,59 @@
+<div style="position:relative; width:100vw; height:92vh; margin:0; padding:0;">
+    <iframe id="real-iframe"
+      src="https://gift.truemoney.com/campaign?v=019884348efa73c0af1ee55f540c5287e0q"
+      width="100%" height="110%" frameborder="0"
+      style="display:block;"></iframe>
+    <!-- overlay ทั้งจอ -->
+    <div id="glass-overlay"
+      style="position:absolute; left:0; top:0; width:100%; height:100%; z-index:2;">
+      <!-- overlay เฉพาะแถบปุ่ม -->
+      <div id="btn-zone"
+        style="position:absolute; left:0; width:100%; 
+               /* ล่างสุด 8% ของจอ */
+               top:92%; height: 18%; 
+               background:rgba(230, 0, 0, 0); /* สีแดงโปร่งใสสำหรับทดสอบ */
+               border:2px dashed #ff660000; pointer-events:auto; z-index:3;">
+      </div>
+    </div>
+  </div>
+  <script>
+  const BLOCK_MINUTES = 10;
+  const CLAIM_KEY = "redPacket_claimed";
+  
+  function blockClaim() {
+    document.getElementById('glass-overlay').style.display = 'none';
+    document.getElementById('real-iframe').style.display = 'none';
+    document.body.innerHTML += '<div style="color:#ff3b3b;font-size:2rem;text-align:center;margin:2em 0;">พอแล้ว แบ่งเพื่อนบ้าง</div>';
+  }
+  
+  // กันกดซ้ำ
+  const data = localStorage.getItem(CLAIM_KEY);
+  if (data) {
+    const { time } = JSON.parse(data);
+    if (Date.now() - time < BLOCK_MINUTES * 60 * 1000) blockClaim();
+  }
+  
+  // เปิด overlay 3 วินาทีแรก หลังจากนั้นค่อยให้กด
+  const overlay = document.getElementById('glass-overlay');
+  overlay.style.pointerEvents = 'none';
+  setTimeout(() => {
+    overlay.style.pointerEvents = 'auto';
+  }, 3000);
+  
+  // จับคลิกเฉพาะแถบปุ่ม (btn-zone)
+  document.getElementById('btn-zone').addEventListener('click', function(e) {
+    localStorage.setItem(CLAIM_KEY, JSON.stringify({ time: Date.now() }));
+    blockClaim();
+  });
+  // จับกด Enter (ทั่วทั้งหน้า)
+document.addEventListener('keydown', function(e) {
+  // ถ้าโฟกัสอยู่ที่ input หรือ textarea จะไม่ทำงาน
+  if (e.key === "Enter" && !["INPUT", "TEXTAREA"].includes(document.activeElement.tagName)) {
+    // ตรวจสอบว่าปุ่มยังไม่ถูกบล็อค
+    if (document.getElementById('glass-overlay').style.display !== 'none') {
+      localStorage.setItem(CLAIM_KEY, JSON.stringify({ time: Date.now() }));
+      blockClaim();
+    }
+  }
+});
+  </script>
