@@ -67,10 +67,9 @@ if ('serviceWorker' in navigator) {
 
 // เพิ่มไว้ด้านบน main.js
 const bgFiles = [
-    'BG/BG.webp',
-    'BG/BG2.webp'
+    'BG/BG.jpg',
     // เพิ่มชื่อไฟล์ได้ตามต้องการ
-  ];
+];
   
   let current = 0;
   
@@ -85,7 +84,7 @@ const bgFiles = [
   // เริ่มต้นแสดงภาพแรก
   changeBG();
   // เปลี่ยนทุก 30 วินาที
-  setInterval(changeBG, 10000);
+  setInterval(changeBG, 10000000);
 
   document.addEventListener('DOMContentLoaded', function() {
     const marqueeBox = document.getElementById('marquee-box');
