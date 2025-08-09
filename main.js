@@ -67,6 +67,24 @@ document.addEventListener('DOMContentLoaded', function() {
       return; // no modal behavior
     });
   });
+  
+  // Prefer optimized WebP variant (_300.webp) if present
+  (function preferWebpThumbs(){
+    const imgs = document.querySelectorAll('img.preview-img');
+    imgs.forEach(img => {
+      try {
+        const url = new URL(img.getAttribute('src'), location.href);
+        const m = url.pathname.match(/\/data\/(.+)\.(jpg|jpeg|png)$/i);
+        if (!m) return;
+        const base = m[1];
+        const candidate = `/data/${base}_300.webp`;
+        // Try to fetch head quickly; on success, swap, else keep original
+        fetch(candidate, { method: 'HEAD' })
+          .then(r => { if (r.ok) img.src = candidate; })
+          .catch(() => {});
+      } catch(e) {}
+    });
+  })();
 });
 
 // Register service worker (offline-first)
