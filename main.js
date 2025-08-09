@@ -40,21 +40,41 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   document.querySelectorAll('.preview-box').forEach(function(box) {
+    const url = box.getAttribute('data-iframe') || '';
+    let hostname = '';
+    try { hostname = new URL(url, location.href).hostname; } catch (e) {}
+    const isGift = /^https?:\/\/giftforyou/i.test(url) || /(^|\.)giftforyou/i.test(hostname);
+
+    // If giftforyou*, render inline iframe and skip modal behavior
+    if (isGift && url) {
+      const label = box.querySelector('.iframe-label');
+      const oldImg = box.querySelector('img.preview-img');
+      if (oldImg) oldImg.remove();
+      const iframe = document.createElement('iframe');
+      iframe.src = url;
+      iframe.className = 'myIframe';
+      iframe.loading = 'lazy';
+      iframe.allowFullscreen = true;
+      iframe.style.cssText = 'width:100%;height:220px;border-radius:12px;border:0;box-shadow:0 2px 24px #0009;display:block;';
+      // insert before label if present, else append
+      if (label) box.insertBefore(iframe, label); else box.appendChild(iframe);
+      box.dataset.inlineIframe = '1';
+    }
+
     box.addEventListener('click', function(e) {
-      // ไม่ให้คลิกที่ลิงก์ด้านใน grid เปิดป๊อปอัพ
-      if (e.target.closest('a')) return;
-      const iframeUrl = box.getAttribute('data-iframe');
-      if (iframeUrl) showModal(iframeUrl);
+      // ไม่ให้คลิกที่ลิงก์ด้านใน grid เปิดป๊อปอัพ และไม่ต้องเปิด Modal อีกต่อไป
+      if (e.target.closest('a')) return; // allow native link clicks only
+      return; // no modal behavior
     });
   });
 });
 
-// Register service worker
+// Register service worker (offline-first)
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('service-worker.js')
-      .then(reg => console.log('Service Worker registered', reg))
-      .catch(err => console.error('Service Worker failed', err));
+    navigator.serviceWorker.register('sw.js')
+      .then(reg => console.log('SW registered', reg))
+      .catch(err => console.error('SW failed', err));
   });
 }
 
