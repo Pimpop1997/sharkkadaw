@@ -1,6 +1,6 @@
 <div style="position:relative; width:100vw; height:92vh; margin:0; padding:0;">
   <iframe id="real-iframe"
-    src="https://gift.truemoney.com/campaign?v=019884348efa73c0af1ee55f540c5287e0q"
+    src="https://gift.truemoney.com/campaign/?v=01988787402b7e89a96f5170f2ee972c15o"
     width="100%" height="110%" frameborder="0"
     style="display:block;"></iframe>
   <!-- overlay ทั้งจอ -->
@@ -16,53 +16,72 @@
   </div>
 </div>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  const CLAIM_KEY = "redPacket_claimed";
-  const BLOCK_MINUTES = 10;
+document.addEventListener('DOMContentLoaded', function () {
+  const CLAIM_KEY = 'redPacket_claimed'; // ใช้ key เดิมเพื่อเข้ากันได้
+  const BLOCK_MINUTES = 10;              // คูลดาวน์ 10 นาที
+  const COUNTDOWN_MS = 10000;             // นับถอยหลัง 10 วิ หลังคลิกแรก
 
-  function blockClaim() {
-    const btnZone = document.getElementById('btn-zone');
-    if (btnZone) {
-      btnZone.style.pointerEvents = 'none';
-      btnZone.innerHTML = '<div style="color:#fff;background:#ff9800cc;padding:12px 0;font-size:1.2rem;text-align:center;">กำลังดำเนินการ...</div>';
-    }
-    setTimeout(function() {
-      document.getElementById('glass-overlay').style.display = 'none';
-      const iframe = document.getElementById('real-iframe');
-      if (iframe && iframe.parentNode) iframe.parentNode.removeChild(iframe);
-      document.body.innerHTML += '<div style="color:#ff3b3b;font-size:2rem;text-align:center;margin:2em 0;">พอแล้ว แบ่งเพื่อนบ้าง</div>';
-    }, 5000);
-  }
+  const iframe  = document.getElementById('real-iframe');
+  const overlay = document.getElementById('glass-overlay');
+  const btnZone = document.getElementById('btn-zone');
 
-  // เช็คว่าถูกบล็อคอยู่หรือไม่ (10 นาที)
-  const data = localStorage.getItem(CLAIM_KEY);
-  let isBlocked = false;
-  if (data) {
+  function cooldownActive() {
+    const data = localStorage.getItem(CLAIM_KEY);
+    if (!data) return false;
     try {
       const { time } = JSON.parse(data);
-      if (Date.now() - time < BLOCK_MINUTES * 60 * 1000) {
-        document.getElementById('glass-overlay').style.display = 'none';
-        const iframe = document.getElementById('real-iframe');
-        if (iframe && iframe.parentNode) iframe.parentNode.removeChild(iframe);
-        document.body.innerHTML += '<div style="color:#ff3b3b;font-size:2rem;text-align:center;margin:2em 0;">พอแล้ว แบ่งเพื่อนบ้าง</div>';
-        isBlocked = true;
-      }
-    } catch(e) {}
+      return Date.now() - time < BLOCK_MINUTES * 60 * 1000;
+    } catch (e) { return false; }
   }
-  if (isBlocked) return;
 
-  // ถ้ายังไม่ถูกบล็อค ให้ bind event
-  document.getElementById('btn-zone').addEventListener('click', function(e) {
-    localStorage.setItem(CLAIM_KEY, JSON.stringify({ time: Date.now() }));
-    blockClaim();
-  });
-  document.addEventListener('keydown', function(e) {
-    if (e.key === "Enter" && !["INPUT", "TEXTAREA"].includes(document.activeElement.tagName)) {
-      if (document.getElementById('glass-overlay').style.display !== 'none') {
-        localStorage.setItem(CLAIM_KEY, JSON.stringify({ time: Date.now() }));
-        blockClaim();
-      }
+  function blockIframe(msg) {
+    if (overlay) overlay.style.display = 'none';
+    if (iframe && iframe.parentNode) iframe.parentNode.removeChild(iframe);
+    document.body.insertAdjacentHTML('beforeend',
+      `<div style="color:#ff3b3b;font-size:2rem;text-align:center;margin:2em 0;">${msg}</div>`);
+  }
+
+  // ถ้าอยู่ในคูลดาวน์ ให้บล็อกทันที
+  if (cooldownActive()) {
+    blockIframe('พอแล้ว แบ่งเพื่อนบ้าง');
+    return;
+  }
+
+  let armed = false;
+  let left = COUNTDOWN_MS;
+  let timer = null;
+
+  function startOnce() {
+    if (armed) return;
+    armed = true;
+
+    // เอา overlay ออกทันทีเพื่อให้พิมพ์ใน iframe ได้แน่นอน
+    if (overlay) {
+      overlay.style.pointerEvents = 'none';
+      overlay.style.display = 'none';
     }
-  });
+
+    if (btnZone) {
+      btnZone.innerHTML =
+        '<div id="countdown-label" style="color:#fff;background:#ff9800cc;padding:12px 0;font-size:1.2rem;text-align:center;">กำลังดำเนินการ... 10 วินาที</div>';
+    }
+
+    timer = setInterval(() => {
+      left -= 1000;
+      const label = document.getElementById('countdown-label');
+      if (label) label.textContent = `กำลังดำเนินการ... ${Math.max(1, (left/1000)|0)} วินาที`;
+      if (left <= 0) {
+        clearInterval(timer);
+        localStorage.setItem(CLAIM_KEY, JSON.stringify({ time: Date.now() }));
+        blockIframe('พอแล้ว แบ่งเพื่อนบ้าง');
+      }
+    }, 1000);
+  }
+
+  // ให้ overlay จับ “คลิก/แตะ ครั้งแรก” แล้วหายไป ไม่กีดกันการพิมพ์
+  if (overlay) {
+    overlay.style.pointerEvents = 'auto';
+    overlay.addEventListener('pointerdown', startOnce, { passive: true, once: true });
+  }
 });
 </script>

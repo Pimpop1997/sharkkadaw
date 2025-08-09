@@ -3,6 +3,12 @@ body {
     color: #fff;
     font-family: 'Segoe UI', sans-serif;
     padding: 20px;
+    /* Default full-screen background */
+    background-image: url('BG/BG.jpg');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
 }
 h1 {
     text-align: center;
@@ -51,6 +57,10 @@ iframe {
     box-shadow: 0 2px 12px rgba(1, 29, 105, 0.2);
     padding: 8px 3px 8px 3px; 
     transition: box-shadow 0.2s, transform 0.2s;
+    /* Performance: isolate layout/paint and skip offscreen */
+    content-visibility: auto;
+    contain: content;
+    contain-intrinsic-size: 230px 260px; /* rough placeholder size to prevent CLS */
 }
 .preview-box:hover {
     box-shadow: 0 4px 24px #0078ff55, 0 1.5px 12px #0004;
@@ -67,6 +77,7 @@ iframe {
     margin-bottom: 3px;
     background: #222;
     box-shadow: 0 2px 10px #0002;
+    will-change: transform;
 }
 @media (max-width: 600px) {
     .grid-container {
@@ -221,4 +232,10 @@ iframe {
 .preview-box.animated {
   animation: gridGlow 1.2s infinite;
   /* animation-delay จะถูก set จาก JS */
+  will-change: box-shadow, transform;
+}
+
+/* Iframe in modal - isolate for cheaper rendering */
+.myIframe {
+  contain: strict;
 }

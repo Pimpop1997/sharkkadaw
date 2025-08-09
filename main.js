@@ -18,8 +18,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function showModal(iframeUrl) {
     const content = modal.querySelector('#iframe-modal-content');
+    // Use srcdoc skeleton instant paint, then swap to src when visible
+    const skeleton = `<div style="display:flex;align-items:center;justify-content:center;width:80vw;height:70vh;border-radius:12px;background:#111;border:0;box-shadow:0 2px 24px #0009;">
+        <div style="width:36px;height:36px;border-radius:50%;border:3px solid #fff3;border-top-color:#fff;animation:spin 0.9s linear infinite"></div>
+      </div>`;
     content.innerHTML = '<button id="close-iframe-modal" style="position:absolute;top:10px;right:10px;font-size:2rem;background:#fff;border:none;border-radius:50%;width:40px;height:40px;cursor:pointer;z-index:2;">×</button>' +
-      `<iframe src="${iframeUrl}" class="myIframe" style="width:80vw;height:70vh;border-radius:12px;border:0;box-shadow:0 2px 24px #0009;z-index:1;" allowfullscreen loading="lazy"></iframe>`;
+      skeleton;
+    const iframe = document.createElement('iframe');
+    iframe.src = iframeUrl;
+    iframe.className = 'myIframe';
+    iframe.style.cssText = 'width:80vw;height:70vh;border-radius:12px;border:0;box-shadow:0 2px 24px #0009;z-index:1;';
+    iframe.allowFullscreen = true;
+    iframe.loading = 'lazy';
+    // defer insertion to next frame so skeleton shows instantly
+    requestIdleCallback ? requestIdleCallback(() => content.appendChild(iframe)) : setTimeout(() => content.appendChild(iframe), 0);
     modal.style.display = 'flex';
     document.getElementById('close-iframe-modal').onclick = function() {
       modal.style.display = 'none';
@@ -64,7 +76,7 @@ const bgFiles = [
   
   // เริ่มต้นแสดงภาพแรก
   changeBG();
-  // เปลี่ยนทุก 30 วินาที
+  // เปลี่ยนช้าลงมากอยู่แล้ว แต่อย่า block main thread
   setInterval(changeBG, 10000000);
 
   document.addEventListener('DOMContentLoaded', function() {
@@ -82,4 +94,19 @@ const bgFiles = [
       const delay = Math.random() * 1.2;
       box.style.animationDelay = delay + 's';
     });
+    // Lazy attrs for preview images (safety net if HTML misses it)
+    document.querySelectorAll('img.preview-img').forEach(img => {
+      img.setAttribute('loading', 'lazy');
+      img.setAttribute('decoding', 'async');
+      if (!img.getAttribute('width')) img.setAttribute('width', '195');
+      if (!img.getAttribute('height')) img.setAttribute('height', '195');
+    });
+    // Keyframe for spinner (injected once)
+    (function ensureSpinnerKeyframes(){
+      if (document.getElementById('spin-style')) return;
+      const s = document.createElement('style');
+      s.id = 'spin-style';
+      s.textContent = '@keyframes spin{to{transform:rotate(360deg)}}';
+      document.head.appendChild(s);
+    })();
   });
