@@ -98,7 +98,7 @@ if ('serviceWorker' in navigator) {
 
 // เพิ่มไว้ด้านบน main.js
 const bgFiles = [
-    'BG/BG.jpg',
+    'BG/BG.webp',
     // เพิ่มชื่อไฟล์ได้ตามต้องการ
 ];
   

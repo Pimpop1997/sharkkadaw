@@ -14,7 +14,7 @@ const PRECACHE = [
   '/style.css',
   '/main.js',
   '/SBG.png',
-  '/BG/BG.jpg',
+  '/BG/BG.webp',
   '/offline.html'
 ];
 

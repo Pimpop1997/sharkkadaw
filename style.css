@@ -4,7 +4,7 @@ body {
     font-family: 'Segoe UI', sans-serif;
     padding: 20px;
     /* Default full-screen background */
-    background-image: url('BG/BG.jpg');
+    background-image: url('BG/BG.webp');
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
