@@ -1,12 +1,11 @@
 {
-  "name": "ชาร์คกะแด่วๆ",
-  "short_name": "Sharkkadaw",
+  "name": "Goonee'",
+  "short_name": "Goonee'",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#00ff66",
   "icons": [
-    { "src": "SBG.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
-    { "src": "og.png", "sizes": "1200x630", "type": "image/png" }
+    { "src": "image/icon.jpg", "sizes": "512x512", "type": "image/jpeg" }
   ]
 }
