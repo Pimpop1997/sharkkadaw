@@ -268,4 +268,4 @@
       });
 
       document.body.appendChild(panel);
-    })();
+    })()

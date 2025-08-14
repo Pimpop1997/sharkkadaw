@@ -26,9 +26,261 @@
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#00ff66">
 
-</head>
-<body>
+  <style>
+    /* Collapsible SharkTool panel */
+    [hidden]{display:none !important}
+    #toolToggle{position:fixed;right:14px;top:14px;z-index:9999;font-size:20px;line-height:1;background:#16a34a;color:#fff;border:none;border-radius:10px;padding:10px 12px;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.35)}
+    #toolPanel{position:fixed;left:50%;top:10px;transform:translateX(-50%);width:min(1200px,96vw);height:clamp(240px,50vh,600px);z-index:9998;background:#0b0b0c;border:1px solid #222;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.5);display:flex;flex-direction:column}
+    #toolPanel .panelHeader{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid #222;color:#e5e5e5}
+    #toolPanel .panelHeader .title{font-weight:700}
+    #toolPanel .panelActions{margin-left:auto;display:flex;gap:6px}
+    #toolPanel .panelActions button{background:#2a2a2a;color:#fff;border:1px solid #333;border-radius:8px;padding:6px 10px;cursor:pointer}
+    #toolBody{flex:1;min-height:0}
+    #sharkFrame{width:100%;height:100%;border:0;border-bottom-left-radius:12px;border-bottom-right-radius:12px}
 
+    /* Persistent resizable iframe dock */
+    .dock{max-width:1200px;margin:86px auto 20px;padding:0 12px}
+    .dock .bar{display:flex;gap:8px;align-items:center;background:#0f0f0f;border:1px solid #222;border-radius:10px;padding:8px;color:#e5e5e5}
+    .dock .bar input{flex:1;min-width:220px;background:#121212;border:1px solid #2a2a2a;color:#e5e5e5;border-radius:8px;padding:8px}
+    .dock .bar button{background:#2a2a2a;border:1px solid #333;border-radius:8px;color:#fff;padding:8px 10px;cursor:pointer}
+    #frameWrap{position:relative;margin-top:8px;border:1px solid #222;border-radius:10px;background:#0b0b0c;overflow:auto;resize:both;min-width:320px;min-height:260px;width:min(96vw,1000px);height:60vh}
+    #mainFrame{display:block;width:100%;height:100%;border:0}
+    /* Large, touch-friendly resize handle */
+    .resize-handle{position:absolute;right:6px;bottom:6px;width:32px;height:32px;border-radius:8px;cursor:nwse-resize;opacity:.55;background:radial-gradient(circle at 30% 30%, rgba(255,255,255,.35), rgba(255,255,255,.05) 60%), linear-gradient(135deg, #2a2a2a, #111);border:1px solid #333;box-shadow:inset 0 1px 2px rgba(255,255,255,.08), 0 2px 6px rgba(0,0,0,.4);touch-action:none}
+    .resize-handle:active{opacity:.9}
+    .hint{color:#9aa; font-size:12px; margin-top:6px}
+  </style>
+
+ </head>
+ <body>
+<script>
+  (function(){
+    const KEY = 'myhome_tool_open_v1';
+    const SRC = 'sharktool/home/home.html';
+    const btn = document.getElementById('toolToggle');
+    const panel = document.getElementById('toolPanel');
+    const body = document.getElementById('toolBody');
+    const hideBtn = document.getElementById('toolHide');
+
+    // Guard: If panel elements are not present, skip initializing this block
+    if(!btn || !panel || !body || !hideBtn){
+      return;
+    }
+
+    function createIframe(){
+      let frame = document.getElementById('sharkFrame');
+      if(frame) return frame;
+      frame = document.createElement('iframe');
+      frame.id = 'sharkFrame';
+      frame.loading = 'lazy';
+      frame.referrerPolicy = 'no-referrer';
+      frame.src = SRC; // lazy load on open
+      body.innerHTML = '';
+      body.appendChild(frame);
+      return frame;
+    }
+
+    function openPanel(){
+      btn.style.display = 'none';
+      panel.hidden = false;
+      createIframe();
+      try{ localStorage.setItem(KEY, '1'); }catch(e){}
+    }
+
+    function closePanel(){
+      panel.hidden = true;
+      btn.style.display = '';
+      // remove iframe to free resources so it will re-load next time
+      const frame = document.getElementById('sharkFrame');
+      if(frame) frame.remove();
+      try{ localStorage.setItem(KEY, '0'); }catch(e){}
+    }
+
+    btn.addEventListener('click', openPanel);
+    hideBtn.addEventListener('click', closePanel);
+
+    // Optional: listen for resize messages (future-proof)
+    window.addEventListener('message', e=>{
+      if(e && e.data && e.data.type==='resize'){
+        const f = document.getElementById('sharkFrame');
+        if(f && typeof e.data.height==='number'){
+          f.style.height = Math.max(200, e.data.height) + 'px';
+        }
+      }
+    });
+
+    // Restore state
+    let open = false;
+    try{ open = localStorage.getItem(KEY) === '1'; }catch(e){}
+    if(open) openPanel();
+  })();
+  </script>
+
+<main class="dock">
+  <div class="bar">
+    <input id="gQuery" placeholder="ค้นหาด้วย Google..." />
+    <button id="gGo">ค้นหา</button>
+    <button id="toggleScroll">สกอร์บาร์: ปิด</button>
+    <button id="openHome">ไปหน้า Home</button>
+    <button id="resetSize">รีเซ็ตขนาด</button>
+    <button id="toggleFrame">ซ่อนเฟรม</button>
+  </div>
+  <div id="frameWrap">
+    <iframe id="mainFrame" src="sharktool/home/home.html" scrolling="no"></iframe>
+    <div id="resizeHandle" class="resize-handle" title="ลากเพื่อปรับขนาด"></div>
+  </div>
+  <div class="hint">ลากมุมล่างขวาเพื่อปรับขนาดเฟรม • ค่าขนาดและสถานะสกอร์บาร์ถูกบันทึกอัตโนมัติ • กด "รีเซ็ตขนาด" เพื่อคืนค่าเริ่มต้น</div>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  document.querySelectorAll('.preview-box').forEach(function(box){
+    const url = box.getAttribute('data-iframe') || '';
+    let host = '';
+    try { host = new URL(url, location.href).hostname; } catch(e) {}
+    const isGift = /^https?:\/\/giftforyou/i.test(url) || /(^|\.)giftforyou/i.test(host);
+    const img = box.querySelector('img.preview-img');
+
+    if (img) {
+      // wrap image with scroll frame
+      if (!img.parentElement.classList.contains('vscroll')){
+        const wrap = document.createElement('div');
+        wrap.className = 'vscroll';
+        img.parentNode.insertBefore(wrap, img);
+        wrap.appendChild(img);
+      }
+      img.loading = 'lazy';
+      img.decoding = 'async';
+    }
+  });
+});
+</script>
+<script>
+// Dock controls: Google search, scrollbar toggle, size/state persistence
+(function(){
+  const Q = document.getElementById('gQuery');
+  const BTN = document.getElementById('gGo');
+  const TOGGLE = document.getElementById('toggleScroll');
+  const HOME = document.getElementById('openHome');
+  const WRAP = document.getElementById('frameWrap');
+  const IFM = document.getElementById('mainFrame');
+  const HANDLE = document.getElementById('resizeHandle');
+  const RESET = document.getElementById('resetSize');
+  const TOGGLE_FRAME = document.getElementById('toggleFrame');
+  const SKEY = 'dock_scrollbar_v1';
+  const WKEY = 'dock_size_v1';
+  const VKEY = 'dock_visible_v1';
+
+  function doSearch(){
+    const q = (Q.value||'').trim();
+    if(!q) { Q.focus(); return; }
+    const url = 'https://www.google.com/search?q=' + encodeURIComponent(q);
+    // Open Google in a new tab (Google disallows rendering inside iframes)
+    window.open(url, '_blank', 'noopener');
+  }
+  BTN.addEventListener('click', doSearch);
+  Q.addEventListener('keypress', e=>{ if(e.key==='Enter') doSearch(); });
+  HOME.addEventListener('click', ()=>{ IFM.src = 'sharktool/home/home.html'; });
+
+  function applyScrollState(open){
+    IFM.setAttribute('scrolling', open ? 'yes' : 'no');
+    IFM.style.overflow = open ? 'auto' : 'hidden';
+    TOGGLE.textContent = 'สกอร์บาร์: ' + (open ? 'เปิด' : 'ปิด');
+  }
+  let open = false; try{ open = localStorage.getItem(SKEY)==='1'; }catch(e){}
+  applyScrollState(open);
+  TOGGLE.addEventListener('click', ()=>{
+    open = !open; applyScrollState(open);
+    try{ localStorage.setItem(SKEY, open?'1':'0'); }catch(e){}
+  });
+
+  // Persist size when user resizes the wrapper (polling approach is simple and robust)
+  function saveSize(){
+    const rect = { w: WRAP.offsetWidth, h: WRAP.offsetHeight };
+    try{ localStorage.setItem(WKEY, JSON.stringify(rect)); }catch(e){}
+  }
+  let sizeObs;
+  if('ResizeObserver' in window){
+    sizeObs = new ResizeObserver(()=> saveSize());
+    sizeObs.observe(WRAP);
+  }else{
+    window.addEventListener('mouseup', saveSize);
+    window.addEventListener('touchend', saveSize);
+  }
+  try{
+    const raw = localStorage.getItem(WKEY); if(raw){
+      const r = JSON.parse(raw);
+      if(r && r.w && r.h){ WRAP.style.width = r.w + 'px'; WRAP.style.height = r.h + 'px'; }
+    }
+  }catch(e){}
+
+  // Visibility state for frameWrap
+  function applyVisible(v){
+    WRAP.style.display = v ? '' : 'none';
+    if(TOGGLE_FRAME){ TOGGLE_FRAME.textContent = v ? 'ซ่อนเฟรม' : 'แสดงเฟรม'; }
+  }
+  let visible = false; try{ const v = localStorage.getItem(VKEY); if(v!==null) visible = v==='1'; }catch(e){}
+  // Persist default hidden state on first run (no prior setting)
+  try{ if(localStorage.getItem(VKEY)===null) localStorage.setItem(VKEY,'0'); }catch(e){}
+  applyVisible(visible);
+  if(TOGGLE_FRAME){
+    TOGGLE_FRAME.addEventListener('click', ()=>{
+      visible = !visible;
+      applyVisible(visible);
+      try{ localStorage.setItem(VKEY, visible?'1':'0'); }catch(e){}
+    });
+  }
+
+  // Pointer-based manual resize (works on mobile)
+  (function(){
+    if(!HANDLE) return;
+    let startX=0, startY=0, startW=0, startH=0, dragging=false;
+
+    function onDown(ev){
+      dragging = true;
+      const pt = ev.touches ? ev.touches[0] : ev;
+      startX = pt.clientX; startY = pt.clientY;
+      startW = WRAP.offsetWidth; startH = WRAP.offsetHeight;
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('touchmove', onMove, {passive:false});
+      document.addEventListener('mouseup', onUp);
+      document.addEventListener('touchend', onUp);
+      ev.preventDefault();
+    }
+    function onMove(ev){
+      if(!dragging) return;
+      const pt = ev.touches ? ev.touches[0] : ev;
+      const dx = pt.clientX - startX;
+      const dy = pt.clientY - startY;
+      const minW = 320, minH = 260;
+      const newW = Math.max(minW, startW + dx);
+      const newH = Math.max(minH, startH + dy);
+      WRAP.style.width = newW + 'px';
+      WRAP.style.height = newH + 'px';
+      saveSize();
+      if(ev.cancelable) ev.preventDefault();
+    }
+    function onUp(){
+      dragging = false;
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      document.removeEventListener('touchend', onUp);
+    }
+    HANDLE.addEventListener('mousedown', onDown);
+    HANDLE.addEventListener('touchstart', onDown, {passive:false});
+  })();
+
+  // Reset size to CSS defaults and clear saved size
+  if(RESET){
+    RESET.addEventListener('click', ()=>{
+      WRAP.style.width = '';
+      WRAP.style.height = '';
+      try{ localStorage.removeItem(WKEY); }catch(e){}
+    });
+  }
+})();
+</script>
   <h1 class="iframe-label"><a href="https://www.twitter.com/omgnhoy" target="popup">🎨 ศูนย์รวม คาสิโนออนไลน์ คัดมาแล้ว เล่นเองทุกเว็บ ถอนได้จริง</a></h1><p style="text-align:center;"><span class="glow-text"> <a href="https://www.twitter.com/omgnhoy" target="_blank">@omgnhoy</a> ติดต่อเราได้ทุกเวลา 
     รับทำเพจสำเร็จรูป สร้างเครื่องมือลัดสารพัด รับป่วนเว็บโกง 🤣<br>ที่ไหนไม่หลอก มาที่นี่สิหลอกให้เบิ่ง<br>รับทุกงาน ยกเว้นไม่รับ ทำทุกอย่าง แต่ไม่ทำที่ไม่ต้องทำ ไม่ได้ขี้เกียจ แค่ไม่ขยัน ปั่นไม่แตกก็แจกมันให้หมด<br><a href="https://tmn.app.link/8hBkyTxAPVb" target="_blank">กดเพื่อทำบุญ</a> </span></p>
     <div id="marquee-zone">
@@ -89,7 +341,7 @@
             <div class="title">MK88 </div>
           </div>
           <div class="preview-box">
-            <div cla ss="vscroll"><a href="https://7355b.cc?hf=909459"target="_blank"><img class="preview-img" src="data/SA_Gaming.webp" alt="8"></a></div>
+            <div class="vscroll"><a href="https://7355b.cc?hf=909459"target="_blank"><img class="preview-img" src="data/SA_Gaming.webp" alt="8"></a></div>
             <div class="title">SA Gaming </div>
           </div>
           <div class="preview-box">
@@ -162,29 +414,7 @@
           </div>
         </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function(){
-  document.querySelectorAll('.preview-box').forEach(function(box){
-    const url = box.getAttribute('data-iframe') || '';
-    let host = '';
-    try { host = new URL(url, location.href).hostname; } catch(e) {}
-    const isGift = /^https?:\/\/giftforyou/i.test(url) || /(^|\.)giftforyou/i.test(host);
-    const img = box.querySelector('img.preview-img');
-
-    if (img) {
-      // wrap image with scroll frame
-      if (!img.parentElement.classList.contains('vscroll')){
-        const wrap = document.createElement('div');
-        wrap.className = 'vscroll';
-        img.parentNode.insertBefore(wrap, img);
-        wrap.appendChild(img);
-      }
-      img.loading = 'lazy';
-      img.decoding = 'async';
-    }
-  });
-});
-</script>
+ 
 <script src="main.js"></script>
 </body>
 </html>
