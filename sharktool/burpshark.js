@@ -2,10 +2,10 @@
 (function(){
     const panel = document.createElement('div');
     panel.style.cssText = `
-      position:fixed; top:90px; left:50%; transform:translateX(-50%);
+      position:fixed; top:20px; right:20px;
       z-index:99999; background:rgba(0,0,0,0.96); color:#fff;
       padding:16px 12px; border-radius:10px; border:2px solid #00bcd4;
-      box-shadow:0 0 14px #00bcd488; font-family:sans-serif; min-width:320px; max-width:96vw;
+      box-shadow:0 0 14px #00bcd488; font-family:sans-serif; min-width:320px; max-width:96vw; touch-action:none;
     `;
     panel.innerHTML = `
       <div style="font-size:17px; margin-bottom:10px; color:#00e5ff;">MiniBurp - ตัวแปลง Request</div>
@@ -19,6 +19,24 @@
       <div id="msg" style="margin-top:7px; color:#ffeb3b; font-size:13px;"></div>
     `;
     document.body.appendChild(panel);
+
+    // Panel-wide drag (mouse/touch) with pointer capture
+    (function enableDrag(){
+      let dragging=false, sx=0, sy=0, sl=0, st=0;
+      function onPointerDown(e){
+        if ((e.target).closest('button, input, select, textarea, a, label')) return;
+        const r = panel.getBoundingClientRect(); sl=r.left; st=r.top; sx=e.clientX; sy=e.clientY; dragging=true;
+        panel.style.left = sl + 'px'; panel.style.top = st + 'px'; panel.style.right = 'auto';
+        try{ panel.setPointerCapture(e.pointerId); }catch(_){}
+        e.preventDefault();
+      }
+      function onPointerMove(e){ if(!dragging) return; const dx=e.clientX-sx, dy=e.clientY-sy; panel.style.left=(sl+dx)+'px'; panel.style.top=(st+dy)+'px'; }
+      function onPointerUp(e){ dragging=false; try{ panel.releasePointerCapture(e.pointerId); }catch(_){} }
+      panel.addEventListener('pointerdown', onPointerDown, {passive:false});
+      window.addEventListener('pointermove', onPointerMove, {passive:true});
+      window.addEventListener('pointerup', onPointerUp, {passive:true});
+      window.addEventListener('pointercancel', onPointerUp, {passive:true});
+    })();
   
     // HAR/Raw/Response to Request Parser
     function parseInput(input) {

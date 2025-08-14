@@ -15,7 +15,8 @@
     'box-shadow:0 6px 18px rgba(0,0,0,.4)',
     'width:300px',
     'max-width:90vw',
-    'padding:10px'
+    'padding:10px',
+    'touch-action:none' // allow smooth pointer dragging
   ].join(';');
 
   panel.innerHTML = '' +
@@ -45,21 +46,20 @@
 
   document.body.appendChild(panel);
 
-  // Drag only from header (mouse + touch via Pointer Events)
+  // Drag from anywhere on panel (except interactive controls)
   (function enableDrag(){
-    const header = panel.querySelector('#ss-header');
     let dragging=false, sx=0, sy=0, sl=0, st=0;
     function onPointerDown(e){
-      const tag=(e.target.tagName||'').toLowerCase();
-      if (['button','input','select','textarea','a','label'].includes(tag)) return;
-      dragging=true; const r=panel.getBoundingClientRect(); sl=r.left; st=r.top; sx=e.clientX; sy=e.clientY;
+      const el = e.target;
+      if (el.closest('button, input, select, textarea, a, label')) return;
+      const r=panel.getBoundingClientRect(); sl=r.left; st=r.top; sx=e.clientX; sy=e.clientY; dragging=true;
       panel.style.left = sl + 'px'; panel.style.top = st + 'px'; panel.style.right='auto';
-      try{ header.setPointerCapture(e.pointerId); }catch(_){}
+      try{ panel.setPointerCapture(e.pointerId); }catch(_){ }
       e.preventDefault();
     }
     function onPointerMove(e){ if(!dragging) return; const dx=e.clientX-sx, dy=e.clientY-sy; panel.style.left=(sl+dx)+'px'; panel.style.top=(st+dy)+'px'; }
-    function onPointerUp(e){ dragging=false; try{ header.releasePointerCapture(e.pointerId); }catch(_){} }
-    header.addEventListener('pointerdown', onPointerDown, {passive:false});
+    function onPointerUp(e){ dragging=false; try{ panel.releasePointerCapture(e.pointerId); }catch(_){} }
+    panel.addEventListener('pointerdown', onPointerDown, {passive:false});
     window.addEventListener('pointermove', onPointerMove, {passive:true});
     window.addEventListener('pointerup', onPointerUp, {passive:true});
     window.addEventListener('pointercancel', onPointerUp, {passive:true});
