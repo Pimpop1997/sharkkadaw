@@ -14,7 +14,7 @@
   const FALLBACK_TOOLS = [
     { id: 'monitor',   name: 'Monitor',    url: REMOTE_BASE + 'monitor.js' },
     { id: 'theme',     name: 'Theme',      url: REMOTE_BASE + 'Theme.js' },
-    { id: 'toolx',     name: 'Tool X',     url: REMOTE_BASE + 'tool-x.js' },
+    { id: 'snipers',   name: 'Snipers',    url: REMOTE_BASE + 'snipers.js' },
     { id: 'burpshark', name: 'BurpShark',  url: REMOTE_BASE + 'burpshark.js' },
     { id: 'sharkscan', name: 'SharkScan',  url: REMOTE_BASE + 'sharkscan.js' },
     { id: 'postshark', name: 'PostShark',  url: REMOTE_BASE + 'postshark.js' },
